@@ -2,6 +2,7 @@ import 'ol/ol.css';
 import Feature from 'ol/Feature';
 import Map from 'ol/Map';
 import Point from 'ol/geom/Point';
+import MultiPoint from 'ol/geom/MultiPoint';
 import Select from 'ol/interaction/Select';
 //import Stamen from 'ol/source/Stamen';
 import OlSourceOSM from "ol/source/OSM";
@@ -10,6 +11,10 @@ import View from 'ol/View';
 import {Icon, Style} from 'ol/style';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
 import {fromLonLat} from 'ol/proj';
+
+function getIconCoords(){
+    return fetch(`http://192.168.0.43:3000/purchase/geographic-areas`).then(res => res.json()).catch(err => console.error(err));
+}
 
 function createStyle(src, img) {
   return new Style({
@@ -22,21 +27,26 @@ function createStyle(src, img) {
     }),
   });
 }
+getIconCoords().then(arr=>{
+    console.dir(arr);
+    let featArr = [];
+    arr.forEach(item=>featArr.push(new Feature(new Point(fromLonLat([item.longitude, item.latitude])))))
 
-var iconFeature = new Feature(new Point(fromLonLat([7.40423,47.263485])));
-iconFeature.set('style', createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined));
+    featArr.forEach(it=>it.set('style', createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined)))
+    map.addLayer(new VectorLayer({
+        style: createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined),
+        source: new VectorSource({features: featArr}),
+      }))
+});
+
+
 
 var map = new Map({
   layers: [
     new TileLayer({
       source: new OlSourceOSM()
     }),
-    new VectorLayer({
-      style: function (feature) {
-        return feature.get('style');
-      },
-      source: new VectorSource({features: [iconFeature]}),
-    }) ],
+     ],
   target: document.getElementById('map'),
   view: new View({
     center: fromLonLat([7.40423,47.263485]),
