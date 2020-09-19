@@ -16,15 +16,14 @@ function getIconCoords(){
     return fetch(`http://192.168.0.43:3000/purchase/geographic-areas`).then(res => res.json()).catch(err => console.error(err));
 }
 
-function createStyle(src, img, score) {
-    let colArr = ['#00ff00','#009900','#ff0000','#990000']
+function createStyle(src, img) {
   return new Style({
     image: new Icon({
       anchor: [0.5, 0.96],
       crossOrigin: 'anonymous',
       src: src,
+      scale: .1,
       img: img,
-      color: colArr[Math.floor(score/500)],
       imgSize: img ? [img.width, img.height] : undefined,
     }),
   });
@@ -34,7 +33,7 @@ getIconCoords().then(arr=>{
     let featArr = [];
     arr.forEach(item=> {
         let f = new Feature(new Point(fromLonLat([item.longitude, item.latitude])))
-        f.setStyle(createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined, item.score))
+        f.setStyle(createStyle(`http://192.168.0.43:3000/leaf${Math.floor(item.score/400+1)}.svg`, undefined))
         featArr.push(f)
         
         })
