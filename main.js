@@ -16,13 +16,15 @@ function getIconCoords(){
     return fetch(`http://192.168.0.43:3000/purchase/geographic-areas`).then(res => res.json()).catch(err => console.error(err));
 }
 
-function createStyle(src, img) {
+function createStyle(src, img, score) {
+    let colArr = ['#00ff00','#009900','#ff0000','#990000']
   return new Style({
     image: new Icon({
       anchor: [0.5, 0.96],
       crossOrigin: 'anonymous',
       src: src,
       img: img,
+      color: colArr[Math.floor(score/500)],
       imgSize: img ? [img.width, img.height] : undefined,
     }),
   });
@@ -30,11 +32,13 @@ function createStyle(src, img) {
 getIconCoords().then(arr=>{
     console.dir(arr);
     let featArr = [];
-    arr.forEach(item=>featArr.push(new Feature(new Point(fromLonLat([item.longitude, item.latitude])))))
-
-    featArr.forEach(it=>it.set('style', createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined)))
+    arr.forEach(item=> {
+        let f = new Feature(new Point(fromLonLat([item.longitude, item.latitude])))
+        f.setStyle(createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined, item.score))
+        featArr.push(f)
+        
+        })
     map.addLayer(new VectorLayer({
-        style: createStyle('https://openlayers.org/en/v4.6.5/examples/data/icon.png', undefined),
         source: new VectorSource({features: featArr}),
       }))
 });
